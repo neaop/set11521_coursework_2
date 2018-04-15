@@ -1,6 +1,6 @@
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import f1_score
 from sklearn import svm
 
 classifier_linear = svm.SVC(kernel='linear')
@@ -34,35 +34,36 @@ def extract_features(corpus):
 
 
 def split_data(features, sentiment):
-    x_train, x_test, y_train, y_test = train_test_split(
+    train_data, test_data, train_labels, test_labels = train_test_split(
         features,
         sentiment,
         train_size=0.80,
         shuffle=True,
         random_state=1234)
-    return x_train, x_test, y_train, y_test
+    return train_data, test_data, train_labels, test_labels
 
 
-def train_svm(x_train, y_train):
-    classifier_linear.fit(x_train, y_train)
+def train_svm(train_data, train_labels):
+    classifier_linear.fit(train_data, train_labels)
 
 
-def test_svm(x_test):
-    return classifier_linear.predict(x_test)
+def test_svm(test_data):
+    return classifier_linear.predict(test_data)
 
 
-def evaluate(actual_results, test_results):
-    print(accuracy_score(actual_results, test_results))
+def evaluate(actual_results, predicted_results):
+    return f1_score(actual_results, predicted_results, average='micro')
 
 
 def main():
     text = import_text()
     corpus, sentiment = create_corpus(text)
     features = extract_features(corpus)
-    x_train, x_test, y_train, y_test = split_data(features, sentiment)
-    train_svm(x_train, y_train)
-    predicted = test_svm(x_test)
-    evaluate(y_test, predicted)
+    train_data, test_data, train_labels, test_labels = split_data(features,
+                                                                  sentiment)
+    train_svm(train_data, train_labels)
+    predicted_labels = test_svm(test_data)
+    print evaluate(predicted_labels, test_labels)
 
 
 if __name__ == '__main__':
