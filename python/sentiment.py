@@ -6,6 +6,8 @@ from sklearn import svm
 from numpy import array
 
 classifier_linear = svm.SVC(kernel='linear')
+classifier_rbf = svm.SVC(kernel='rbf')
+
 corpus = []
 sentiment = []
 features = array([])
@@ -51,11 +53,14 @@ def split_data(training_size=90):
 def train_classifier(train_data, train_labels):
     """Train classifier with training data."""
     classifier_linear.fit(train_data, train_labels)
+    classifier_rbf.fit(train_data, train_labels)
 
 
 def test_classifier(test_data):
     """Test classifier with testing data."""
-    return classifier_linear.predict(test_data)
+    linear_prediction = classifier_linear.predict(test_data)
+    rbf_prediction = classifier_rbf.predict(test_data)
+    return linear_prediction, rbf_prediction
 
 
 def evaluate(actual_labels, predicted_labels):
@@ -76,42 +81,58 @@ def split_prediction():
     """Train, test, and evaluate classifier using split data set."""
     train_data, test_data, train_labels, test_labels = process_data()
     train_classifier(train_data, train_labels)
-    predicted_labels = test_classifier(test_data)
-    return evaluate(test_labels, predicted_labels)
+    linear_prediction, rbf_prediction = test_classifier(test_data)
+    linear_evaluation = evaluate(test_labels, linear_prediction)
+    rbf_evaluation = evaluate(test_labels, rbf_prediction)
+    return linear_evaluation, rbf_evaluation
 
 
 def repeat_split_prediction():
     """Run the split prediction 10 times to calculate average f1-score."""
-    accuracies = []
+    linear_accuracies = []
+    rbf_accuracies = []
     for x in range(11):
-        accuracies.append(split_prediction())
-    return sum(accuracies) / len(accuracies)
+        linear_accuracy, rbf_accuracy = split_prediction()
+        linear_accuracies.append(linear_accuracy)
+        rbf_accuracies.append(rbf_accuracy)
+    average_linear = sum(linear_accuracies) / len(linear_accuracies)
+    average_rbf = sum(rbf_accuracies) / len(rbf_accuracies)
+    return average_linear, average_rbf
 
 
 def k_fold_prediction(folds=10):
     """Train, test and evaluate classifier using k-folded data set."""
     process_data()
-    accuracies = []
+    linear_accuracies = []
+    rbf_accuracies = []
     k_folder = KFold(n_splits=folds, shuffle=True)
+
     for train_index, test_index in k_folder.split(features):
-        train_features = [features[i] for i in train_index]
-        test_features = [features[i] for i in test_index]
+        train_data = [features[i] for i in train_index]
+        test_data = [features[i] for i in test_index]
         train_labels = [sentiment[i] for i in train_index]
         test_labels = [sentiment[i] for i in test_index]
 
-        train_classifier(train_features, train_labels)
-        predicted_labels = test_classifier(test_features)
-        accuracies.append(evaluate(test_labels, predicted_labels))
+        train_classifier(train_data, train_labels)
+        linear_predicted, rbf_predicted = test_classifier(test_data)
+        linear_accuracies.append(evaluate(test_labels, linear_predicted))
+        rbf_accuracies.append(evaluate(test_labels, rbf_predicted))
 
-    return sum(accuracies) / len(accuracies)
+    average_linear = sum(linear_accuracies) / len(linear_accuracies)
+    average_rbf = sum(rbf_accuracies) / len(rbf_accuracies)
+
+    return average_linear, average_rbf
 
 
 def main():
     """Entry point."""
-    linear_svm_results = repeat_split_prediction()
-    k_fold_results = k_fold_prediction()
-    print 'split linear SVM :\t {0}'.format(linear_svm_results)
-    print 'k-fold linear SVM :\t {0}'.format(k_fold_results)
+    linear_split_results, rbf_split_results = repeat_split_prediction()
+    linear_fold_results, rbf_fold_results = k_fold_prediction()
+    print 'data | kernel | result'
+    print 'split| linear | {0}'.format(linear_split_results)
+    print 'split| rbf    | {0}'.format(rbf_split_results)
+    print 'fold | linear | {0}'.format(linear_fold_results)
+    print 'fold | rbf    | {0}'.format(rbf_fold_results)
 
 
 if __name__ == '__main__':
