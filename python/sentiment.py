@@ -24,7 +24,7 @@ def create_corpus(text):
     return corpus, sentiment
 
 
-def extract_frequency_features(corpus):
+def extract_frequency_features(corpus, sentiment):
     """Use tf-idf to extract features from the corpus"""
     frequency_vectorizer = TfidfVectorizer(analyzer='word', lowercase=False)
     frequency_features = frequency_vectorizer.fit_transform(corpus)
@@ -37,6 +37,7 @@ def split_data(features, sentiment, training_size=0.90):
         features,
         sentiment,
         train_size=training_size,
+        test_size=1 - training_size,
         shuffle=True)
     return train_data, test_data, train_labels, test_labels
 
@@ -61,17 +62,25 @@ def process_data():
     """Import text file, convert to corpus, and extract features."""
     text = import_text()
     corpus, sentiment = create_corpus(text)
-    features = extract_frequency_features(corpus)
-
+    features = extract_frequency_features(corpus, sentiment)
     return features, sentiment, corpus
 
 
-def run_classifier_split(classifier, train_data, test_data, train_labels,
-                         test_labels):
+def run_classifier_split(classifier, features, sentiment):
     """Test a classifier using a 90:10 training/testing set."""
+    train_data, test_data, train_labels, test_labels = split_data(features,
+                                                                  sentiment)
     train_classifier(classifier, train_data, train_labels)
     predicated_labels = test_classifier(classifier, test_data)
     return evaluate(test_labels, predicated_labels)
+
+
+def repeat_classifier_split(classifier, features, sentiment):
+    """Test the average performance of a classifier."""
+    accuracies = []
+    for i in range(11):
+        accuracies.append(run_classifier_split(classifier, features, sentiment))
+    return sum(accuracies) / len(accuracies)
 
 
 def run_classifier_fold(classifier, features, sentiment):
@@ -90,33 +99,18 @@ def run_classifier_fold(classifier, features, sentiment):
     return sum(accuracies) / len(accuracies)
 
 
-def repeat_run_classifier_split(classifier, train_data, test_data, train_labels,
-                                test_labels):
-    """Test the average performance of a classifier."""
-    accuracies = []
-    for i in range(11):
-        accuracies.append(
-            run_classifier_split(classifier, train_data, test_data,
-                                 train_labels, test_labels))
-    return sum(accuracies) / len(accuracies)
-
-
 def run_all_tests():
     """Test linear and rbf kernels with folded and split data."""
     classifiers = [svm.SVC(kernel='linear'),
                    svm.SVC(kernel='rbf'),
-                   # svm.SVC(kernel='poly')
+                   svm.SVC(kernel='poly')
                    ]
     split_results = []
     fold_results = []
     features, sentiment, corpus = process_data()
-    train_data, test_data, train_labels, test_labels = split_data(features,
-                                                                  sentiment)
 
     for classifier in classifiers:
-        split_result = repeat_run_classifier_split(classifier, train_data,
-                                                   test_data, train_labels,
-                                                   test_labels)
+        split_result = repeat_classifier_split(classifier, features, sentiment)
         fold_result = run_classifier_fold(classifier, features, sentiment)
 
         split_results.append(split_result)
