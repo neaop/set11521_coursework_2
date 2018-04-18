@@ -1,2 +1,10 @@
 **/.idea/
 **/venv/
+
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+
