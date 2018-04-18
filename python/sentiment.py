@@ -5,7 +5,7 @@ from sklearn.metrics import f1_score
 from sklearn import svm
 
 """
-Perform sentiment classification using Linear,RBF, and Polynomial SVM kernels.
+Perform sentiment classification using Linear, RBF, and Polynomial SVM kernels.
 Requires data file named 'training.txt' in same directory as script.
 """
 
