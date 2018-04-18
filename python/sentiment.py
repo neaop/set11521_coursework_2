@@ -4,9 +4,14 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import f1_score
 from sklearn import svm
 
+"""
+Perform sentiment classification using Linear,RBF, and Polynomial SVM kernels.
+Requires data file named 'training.txt' in same directory as script.
+"""
+
 
 def import_text():
-    """Read in training file, removing capitalisation, and duplicates."""
+    """Read text file, remove capitalisation, and duplicates - return list."""
     text_file = open('training.txt', 'r')
     text = set()
     for line in text_file:
@@ -15,7 +20,7 @@ def import_text():
 
 
 def create_corpus(text):
-    """Split raw text into sentiment and review."""
+    """Split raw text into sentiment and review - returns two lists."""
     corpus = []
     sentiment = []
     for line in text:
@@ -25,14 +30,14 @@ def create_corpus(text):
 
 
 def extract_frequency_features(corpus, sentiment):
-    """Use tf-idf to extract features from the corpus"""
+    """Use tf-idf to extract features from the corpus - return array."""
     frequency_vectorizer = TfidfVectorizer(analyzer='word', lowercase=False)
     frequency_features = frequency_vectorizer.fit_transform(corpus)
     return frequency_features.toarray()
 
 
 def split_data(features, sentiment, training_size=0.90):
-    """Split features into testing and training sets."""
+    """Split features into testing and training sets - return 4 lists."""
     train_data, test_data, train_labels, test_labels = train_test_split(
         features,
         sentiment,
@@ -48,18 +53,18 @@ def train_classifier(classifier, train_data, train_labels):
 
 
 def test_classifier(classifier, test_data):
-    """Test a classifier with testing data."""
+    """Test a classifier with testing data - returns list."""
     predication = classifier.predict(test_data)
     return predication
 
 
 def evaluate(actual_labels, predicted_labels):
-    """Evaluate classifier's f1-score."""
+    """Evaluate classifier's f1-score - returns float."""
     return f1_score(actual_labels, predicted_labels, average='micro')
 
 
 def process_data():
-    """Import text file, convert to corpus, and extract features."""
+    """Import text, convert to corpus, and extract features - return 3 lists."""
     text = import_text()
     corpus, sentiment = create_corpus(text)
     features = extract_frequency_features(corpus, sentiment)
@@ -67,7 +72,7 @@ def process_data():
 
 
 def run_classifier_split(classifier, features, sentiment):
-    """Test a classifier using a 90:10 training/testing set."""
+    """Test a classifier using a 90:10 training/testing set - return float."""
     train_data, test_data, train_labels, test_labels = split_data(features,
                                                                   sentiment)
     train_classifier(classifier, train_data, train_labels)
@@ -76,7 +81,7 @@ def run_classifier_split(classifier, features, sentiment):
 
 
 def repeat_classifier_split(classifier, features, sentiment):
-    """Test the average performance of a classifier."""
+    """Test the average performance of a classifier - return float."""
     accuracies = []
     for i in range(11):
         accuracies.append(run_classifier_split(classifier, features, sentiment))
@@ -84,7 +89,7 @@ def repeat_classifier_split(classifier, features, sentiment):
 
 
 def run_classifier_fold(classifier, features, sentiment):
-    """Test a classifier using a k-folded data set."""
+    """Test a classifier using a k-folded data set - return float."""
     k_folder = KFold(n_splits=10, shuffle=True)
     accuracies = []
     for train_index, test_index in k_folder.split(features):
