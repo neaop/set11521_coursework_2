@@ -4,7 +4,6 @@
 \usepackage{fancyhdr}
 
 \pagestyle{fancy}
-\renewcommand\refname{Bibliography}
 
 \title{Data Wrangling Coursework 2}
 \author{Sam Dixon
@@ -42,7 +41,7 @@ The following preprocessing techniques were applied to the provided data file:
 \section{Feature Extraction}
 Once the data was processed, feature extraction was performed.
 Text frequency-inverse document frequency (tf-idf) was utilised to calculate
-weights for each unigram in the corpus.
+weights for each unigram in the corpus \cite{tfidf}.
 No minimum or maximum document frequency (cut-off) was applied to remove
 common or uncommon corpus words - these methods could be explored further to
 alter the accuracy of the classification.
@@ -53,16 +52,16 @@ comparison of techniques.
 
 The split dataset consisted of 9:1 training/testing split - the order of the
 features was shuffled to prevent either the training or testing sets containing
-only one class of review (positive or negative).
+only one class of review (positive or negative) \cite{split}.
 
 The k-folded dataset was folded 10 times, with 9 folds being used to train a
-classifier, and the remaining 1 fold used to test.
+classifier, and the remaining 1 fold used to test \cite{fold}.
 Like the split dataset, the order of the features was shuffled to ensure
 uniform distribution of sentiment classes.
 
 
 \section{Classification Model}
-Three different SVM kernels were tested in this project
+Three different SVM kernels were tested in this project:
 
 \begin{itemize}
     \item Linear.
@@ -71,12 +70,14 @@ Three different SVM kernels were tested in this project
 \end{itemize}
 The default {\tt scikit-learn} implementation for each kernel was utilised,
 further experimentation and turning of kernel parameters could be investigated
-to improve their accuracy.
+to improve their accuracy \cite{svm,kernel}.
 
 
 \section{Evaluation}
-Each SVM kernel's results was evaluated using the F1-score function.
-F1-score is a commonly used metric for the comparison of algorithm accuracies.
+Each SVM kernel's results was evaluated using the F1-score function
+\cite{f1score}.  
+F1-score is a commonly used metric for the comparison of
+algorithm accuracies.
 The F1-score of a system is calculated based off of its Precision and
 Recall.
 F1-score is typically a more accurate measure of an algorithm's performance
@@ -135,6 +136,5 @@ Project available at: \url{https://github.com/neaop/set11521_coursework_2}.
 
 \bibliography{report}
 \bibliographystyle{ieeetr}
-\nocite{*}
 
 \end{document}
